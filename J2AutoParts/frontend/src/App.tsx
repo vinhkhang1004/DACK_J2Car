@@ -20,12 +20,12 @@ function AdminRoute({ children }: { children: ReactElement }) {
 export default function App() {
   return (
     <Routes>
+      <Route path="dang-nhap" element={<Login />} />
+      <Route path="dang-ky" element={<Register />} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="san-pham" element={<Products />} />
         <Route path="san-pham/:id" element={<ProductDetail />} />
-        <Route path="dang-nhap" element={<Login />} />
-        <Route path="dang-ky" element={<Register />} />
         <Route
           path="quan-tri"
           element={
