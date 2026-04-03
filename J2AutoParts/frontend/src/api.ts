@@ -113,4 +113,12 @@ export type Paged<T> = {
   last: boolean;
 };
 
+export type DashboardStats = {
+  totalProducts: number;
+  totalCategories: number;
+  totalUsers: number;
+  totalOrders: number;
+  totalRevenue: number;
+};
+
 export type ApiError = { message: string; fieldErrors?: Record<string, string> };
