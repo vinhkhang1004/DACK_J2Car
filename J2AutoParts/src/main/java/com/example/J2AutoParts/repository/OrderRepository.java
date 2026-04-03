@@ -12,4 +12,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
 	List<Order> findByUserIdOrderByOrderDateDesc(Long userId);
 
+	List<Order> findAllByOrderByOrderDateDesc();
+
+	@org.springframework.data.jpa.repository.Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status != 'CANCELLED'")
+	java.math.BigDecimal getTotalRevenue();
 }
