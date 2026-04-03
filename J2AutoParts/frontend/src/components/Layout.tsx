@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { useCart } from "../CartContext";
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
   color: isActive ? "#ff6b35" : "#8b97a8",
@@ -8,6 +9,7 @@ const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
 
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth();
+  const { itemCount } = useCart();
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -76,6 +78,25 @@ export default function Layout() {
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.062 2h2.292l2.333 12.571a2 2 0 0 0 2 1.429h9.882a2 2 0 0 0 2-1.429l1.429-7.571h-14.882" />
               </svg>
+              {itemCount > 0 && (
+                <span style={{
+                  position: "absolute",
+                  top: -8,
+                  right: -8,
+                  background: "var(--accent)",
+                  color: "white",
+                  fontSize: "0.65rem",
+                  fontWeight: 800,
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 0 10px rgba(255,107,53,0.4)"
+                }}>
+                  {itemCount}
+                </span>
+              )}
             </Link>
             {user && (
               <button
