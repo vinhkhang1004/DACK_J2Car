@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { api, type Product } from "../api";
+import { useCart } from "../CartContext";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
@@ -12,6 +13,8 @@ export default function ProductDetail() {
   const [p, setP] = useState<Product | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [activeImg, setActiveImg] = useState("");
+  const [qty, setQty] = useState(1);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (!id) return;
@@ -138,14 +141,41 @@ export default function ProductDetail() {
             )}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
-            <button className="btn btn-primary" style={{ height: "56px", fontSize: "1rem", fontWeight: 700 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              background: "rgba(255,255,255,0.05)", 
+              borderRadius: "8px",
+              padding: "0.25rem"
+            }}>
+              <button 
+                className="btn btn-ghost" 
+                style={{ width: 40, height: 40, padding: 0 }}
+                onClick={() => setQty(Math.max(1, qty - 1))}
+              >
+                -
+              </button>
+              <span style={{ width: 40, textAlign: "center", fontWeight: 700 }}>{qty}</span>
+              <button 
+                className="btn btn-ghost" 
+                style={{ width: 40, height: 40, padding: 0 }}
+                onClick={() => setQty(qty + 1)}
+              >
+                +
+              </button>
+            </div>
+            <button 
+              className="btn btn-primary" 
+              style={{ height: "56px", fontSize: "1rem", fontWeight: 700, flex: 1 }}
+              onClick={() => void addToCart(p.id, qty)}
+            >
               Thêm vào giỏ hàng
             </button>
-            <button className="btn btn-ghost" style={{ height: "56px", background: "rgba(255,255,255,0.03)" }}>
-              Thêm vào danh sách ước
-            </button>
           </div>
+          <button className="btn btn-ghost" style={{ height: "56px", width: "100%", background: "rgba(255,255,255,0.03)", marginBottom: "2rem" }}>
+            Thêm vào danh sách ước
+          </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.85rem", color: "#00deff", fontWeight: 600 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#00deff", boxShadow: "0 0 10px #00deff" }}></div>
