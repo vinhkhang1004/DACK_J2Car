@@ -173,9 +173,22 @@ export default function Products() {
                   </div>
 
                   <div className="card-price-row">
-                    <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "white" }}>
-                      {formatPrice(p.price)}
-                    </span>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      {p.discountPrice && p.discountPrice > 0 ? (
+                        <>
+                          <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent)" }}>
+                            {formatPrice(p.discountPrice)}
+                          </span>
+                          <span className="muted" style={{ fontSize: "0.85rem", textDecoration: "line-through" }}>
+                            {formatPrice(p.price)}
+                          </span>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "white" }}>
+                          {formatPrice(p.price)}
+                        </span>
+                      )}
+                    </div>
                     <button className="btn-add-cart">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M12 5v14M5 12h14" />

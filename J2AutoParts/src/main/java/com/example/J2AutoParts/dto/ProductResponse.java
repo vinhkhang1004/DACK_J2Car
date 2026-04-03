@@ -17,9 +17,12 @@ public class ProductResponse {
 	private String name;
 	private String sku;
 	private BigDecimal price;
+	private BigDecimal discountPrice;
 	private Integer stockQuantity;
 	private String description;
 	private String imageUrl;
+	private String specifications;
+	private String compatibility;
 	private Long categoryId;
 	private String categoryName;
 }
