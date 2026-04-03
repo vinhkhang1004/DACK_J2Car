@@ -22,9 +22,12 @@ export default function Admin() {
   const [pName, setPName] = useState("");
   const [pSku, setPSku] = useState("");
   const [pPrice, setPPrice] = useState("");
+  const [pDiscountPrice, setPDiscountPrice] = useState("");
   const [pStock, setPStock] = useState("");
   const [pDesc, setPDesc] = useState("");
   const [pImg, setPImg] = useState("");
+  const [pSpecs, setPSpecs] = useState("");
+  const [pCompat, setPCompat] = useState("");
   const [pCategoryId, setPCategoryId] = useState<number | "">("");
   const [editProductId, setEditProductId] = useState<number | null>(null);
 
@@ -108,9 +111,12 @@ export default function Admin() {
       name: pName,
       sku: pSku,
       price: Number(pPrice),
+      discountPrice: pDiscountPrice ? Number(pDiscountPrice) : null,
       stockQuantity: Number(pStock),
       description: pDesc || null,
       imageUrl: pImg || null,
+      specifications: pSpecs || null,
+      compatibility: pCompat || null,
       categoryId: Number(pCategoryId),
     };
     try {
@@ -124,9 +130,12 @@ export default function Admin() {
       setPName("");
       setPSku("");
       setPPrice("");
+      setPDiscountPrice("");
       setPStock("");
       setPDesc("");
       setPImg("");
+      setPSpecs("");
+      setPCompat("");
       setPCategoryId("");
       setEditProductId(null);
       await reloadProducts();
@@ -144,9 +153,12 @@ export default function Admin() {
     setPName(p.name);
     setPSku(p.sku);
     setPPrice(String(p.price));
+    setPDiscountPrice(p.discountPrice ? String(p.discountPrice) : "");
     setPStock(String(p.stockQuantity));
     setPDesc(p.description ?? "");
     setPImg(p.imageUrl ?? "");
+    setPSpecs(p.specifications ?? "");
+    setPCompat(p.compatibility ?? "");
     setPCategoryId(p.categoryId);
     setTab("products");
     setMsg(null);
@@ -290,6 +302,16 @@ export default function Admin() {
                 />
               </div>
               <div className="field">
+                <label>Giá sau giảm (VND - Tuỳ chọn)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={pDiscountPrice}
+                  onChange={(e) => setPDiscountPrice(e.target.value)}
+                />
+              </div>
+              <div className="field">
                 <label>Tồn kho</label>
                 <input
                   type="number"
@@ -322,6 +344,24 @@ export default function Admin() {
                 <label>Mô tả</label>
                 <textarea value={pDesc} onChange={(e) => setPDesc(e.target.value)} />
               </div>
+              <div className="field" style={{ gridColumn: "1 / -1" }}>
+                <label>Thông số kỹ thuật (Định dạng: Tên: Giá trị - Mỗi dòng một mục)</label>
+                <textarea 
+                  value={pSpecs} 
+                  onChange={(e) => setPSpecs(e.target.value)} 
+                  placeholder={"Chất liệu: Thép cao cấp\nĐường kính: 300mm"}
+                  rows={4}
+                />
+              </div>
+              <div className="field" style={{ gridColumn: "1 / -1" }}>
+                <label>Xe tương thích (Nhập tự do)</label>
+                <textarea 
+                  value={pCompat} 
+                  onChange={(e) => setPCompat(e.target.value)} 
+                  placeholder="BMW M3, M4..."
+                  rows={4}
+                />
+              </div>
             </div>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               <button type="submit" className="btn btn-primary">
@@ -336,9 +376,12 @@ export default function Admin() {
                     setPName("");
                     setPSku("");
                     setPPrice("");
+                    setPDiscountPrice("");
                     setPStock("");
                     setPDesc("");
                     setPImg("");
+                    setPSpecs("");
+                    setPCompat("");
                     setPCategoryId("");
                   }}
                 >

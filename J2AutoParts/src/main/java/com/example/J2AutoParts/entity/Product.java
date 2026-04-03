@@ -39,6 +39,9 @@ public class Product {
 	@Column(nullable = false, precision = 14, scale = 2)
 	private BigDecimal price;
 
+	@Column(precision = 14, scale = 2)
+	private BigDecimal discountPrice;
+
 	@Column(nullable = false)
 	private Integer stockQuantity;
 
@@ -47,6 +50,12 @@ public class Product {
 
 	@Column(length = 500)
 	private String imageUrl;
+
+	@Column(length = 4000)
+	private String specifications;
+
+	@Column(length = 4000)
+	private String compatibility;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "category_id", nullable = false)

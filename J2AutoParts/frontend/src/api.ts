@@ -52,9 +52,12 @@ export type Product = {
   name: string;
   sku: string;
   price: number;
+  discountPrice: number | null;
   stockQuantity: number;
   description: string | null;
   imageUrl: string | null;
+  specifications: string | null;
+  compatibility: string | null;
   categoryId: number;
   categoryName: string;
 };

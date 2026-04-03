@@ -24,6 +24,9 @@ public class ProductRequest {
 	@DecimalMin("0.0")
 	private BigDecimal price;
 
+	@DecimalMin("0.0")
+	private BigDecimal discountPrice;
+
 	@NotNull
 	@Min(0)
 	private Integer stockQuantity;
@@ -33,6 +36,12 @@ public class ProductRequest {
 
 	@Size(max = 500)
 	private String imageUrl;
+
+	@Size(max = 4000)
+	private String specifications;
+
+	@Size(max = 4000)
+	private String compatibility;
 
 	@NotNull
 	private Long categoryId;
