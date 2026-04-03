@@ -41,6 +41,7 @@ export default function Admin() {
   const [pStock, setPStock] = useState("");
   const [pDesc, setPDesc] = useState("");
   const [pImg, setPImg] = useState("");
+  const [pAdditionalImages, setPAdditionalImages] = useState<string[]>([]);
   const [pSpecs, setPSpecs] = useState("");
   const [pCompat, setPCompat] = useState("");
   const [pCategoryId, setPCategoryId] = useState<number | "">("");
@@ -101,11 +102,12 @@ export default function Admin() {
       name: pName, sku: pSku, price: Number(pPrice), discountPrice: pDiscountPrice ? Number(pDiscountPrice) : null,
       stockQuantity: Number(pStock), description: pDesc || null, imageUrl: pImg || null,
       specifications: pSpecs || null, compatibility: pCompat || null, categoryId: Number(pCategoryId),
+      additionalImageUrls: pAdditionalImages.filter(link => !!link.trim())
     };
     try {
       if (editProductId) await api.put(`/products/${editProductId}`, payload);
       else await api.post("/products", payload);
-      setPName(""); setPSku(""); setPPrice(""); setPDiscountPrice(""); setPStock(""); setPDesc(""); setPImg(""); setPSpecs(""); setPCompat(""); setPCategoryId(""); setEditProductId(null);
+      setPName(""); setPSku(""); setPPrice(""); setPDiscountPrice(""); setPStock(""); setPDesc(""); setPImg(""); setPAdditionalImages([]); setPSpecs(""); setPCompat(""); setPCategoryId(""); setEditProductId(null);
       setMsg("Đã lưu sản phẩm");
       void loadData();
     } catch (ex: any) { setErr(ex.response?.data?.message || "Lỗi lưu sản phẩm"); }
@@ -141,7 +143,7 @@ export default function Admin() {
     setPName(p.name); setPSku(p.sku); setPPrice(String(p.price));
     setPDiscountPrice(p.discountPrice ? String(p.discountPrice) : "");
     setPStock(String(p.stockQuantity)); setPDesc(p.description ?? "");
-    setPImg(p.imageUrl ?? ""); setPSpecs(p.specifications ?? "");
+    setPImg(p.imageUrl ?? ""); setPAdditionalImages(p.additionalImageUrls || []); setPSpecs(p.specifications ?? "");
     setPCompat(p.compatibility ?? ""); setPCategoryId(p.categoryId);
     setMsg(null); setErr(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -225,8 +227,17 @@ export default function Admin() {
                   </select>
                 </div>
                 <div className="field" style={{ gridColumn: "1 / -1" }}>
-                  <label>Hình ảnh (URL)</label>
+                  <label>Hình ảnh chính (URL)</label>
                   <input value={pImg} onChange={e => setPImg(e.target.value)} />
+                </div>
+                <div className="field" style={{ gridColumn: "1 / -1" }}>
+                  <label>Hình ảnh bổ sung (Dán link ảnh, mỗi dòng 1 link)</label>
+                  <textarea 
+                    value={pAdditionalImages.join("\n")} 
+                    onChange={e => setPAdditionalImages(e.target.value.split("\n"))} 
+                    rows={3} 
+                    placeholder="https://example.com/image2.jpg"
+                  />
                 </div>
                 <div className="field" style={{ gridColumn: "1 / -1" }}>
                   <label>Mô tả chi tiết</label>
@@ -240,7 +251,7 @@ export default function Admin() {
               <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
                 <button className="btn btn-primary">{editProductId ? "Cập nhật" : "Thêm mới"}</button>
                 {editProductId && <button type="button" className="btn btn-ghost" onClick={() => {
-                   setEditProductId(null); setPName(""); setPSku(""); setPPrice(""); setPDiscountPrice(""); setPStock(""); setPDesc(""); setPImg(""); setPSpecs(""); setPCompat(""); setPCategoryId("");
+                   setEditProductId(null); setPName(""); setPSku(""); setPPrice(""); setPDiscountPrice(""); setPStock(""); setPDesc(""); setPImg(""); setPAdditionalImages([]); setPSpecs(""); setPCompat(""); setPCategoryId("");
                 }}>Hủy</button>}
               </div>
             </form>

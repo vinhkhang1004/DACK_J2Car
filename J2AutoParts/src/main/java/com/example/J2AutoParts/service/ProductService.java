@@ -70,6 +70,7 @@ public class ProductService {
 				.specifications(request.getSpecifications())
 				.compatibility(request.getCompatibility())
 				.category(cat)
+				.additionalImageUrls(request.getAdditionalImageUrls() != null ? new java.util.ArrayList<>(request.getAdditionalImageUrls()) : new java.util.ArrayList<>())
 				.build();
 		return toResponse(productRepository.save(p));
 	}
@@ -95,6 +96,10 @@ public class ProductService {
 		p.setSpecifications(request.getSpecifications());
 		p.setCompatibility(request.getCompatibility());
 		p.setCategory(cat);
+		if (request.getAdditionalImageUrls() != null) {
+			p.getAdditionalImageUrls().clear();
+			p.getAdditionalImageUrls().addAll(request.getAdditionalImageUrls());
+		}
 		return toResponse(productRepository.save(p));
 	}
 
@@ -133,6 +138,7 @@ public class ProductService {
 				.compatibility(p.getCompatibility())
 				.categoryId(c.getId())
 				.categoryName(c.getName())
+				.additionalImageUrls(new java.util.ArrayList<>(p.getAdditionalImageUrls()))
 				.build();
 	}
 

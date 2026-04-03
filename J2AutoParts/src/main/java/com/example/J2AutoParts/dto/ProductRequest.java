@@ -45,4 +45,6 @@ public class ProductRequest {
 
 	@NotNull
 	private Long categoryId;
+
+	private java.util.List<String> additionalImageUrls;
 }
