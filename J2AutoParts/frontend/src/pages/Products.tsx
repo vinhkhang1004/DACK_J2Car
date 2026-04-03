@@ -123,9 +123,28 @@ export default function Products() {
         {/* Main Content Area */}
         <main>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-            <span className="muted" style={{ fontSize: "0.95rem" }}>
-              Hiển thị {data?.totalElements ?? 0} kết quả
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <span className="muted" style={{ fontSize: "0.95rem" }}>
+                Hiển thị {data?.totalElements ?? 0} kết quả
+              </span>
+              {q && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <span style={{ fontSize: "0.9rem", color: "var(--accent)", fontWeight: 600 }}>
+                    Kết quả cho: "{q}"
+                  </span>
+                  <button 
+                    onClick={() => {
+                      const next = new URLSearchParams(searchParams);
+                      next.delete("q");
+                      setSearchParams(next);
+                    }}
+                    style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.8rem", textDecoration: "underline" }}
+                  >
+                    Xóa tìm kiếm
+                  </button>
+                </div>
+              )}
+            </div>
             <div style={{ display: "flex", gap: "0.75rem" }}>
               <div className="page-num active" style={{ width: 36, height: 36 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

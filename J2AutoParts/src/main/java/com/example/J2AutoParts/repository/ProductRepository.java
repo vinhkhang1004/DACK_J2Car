@@ -16,10 +16,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 	Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
-	@Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :q, '%'))")
+	@Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%')) " +
+			"OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :q, '%')) " +
+			"OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%')) " +
+			"OR LOWER(p.specifications) LIKE LOWER(CONCAT('%', :q, '%'))")
 	Page<Product> search(@Param("q") String q, Pageable pageable);
 
-	@Query("SELECT p FROM Product p WHERE p.category.id = :categoryId AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :q, '%')))")
+	@Query("SELECT p FROM Product p WHERE p.category.id = :categoryId AND (" +
+			"LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%')) " +
+			"OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :q, '%')) " +
+			"OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%')) " +
+			"OR LOWER(p.specifications) LIKE LOWER(CONCAT('%', :q, '%')))")
 	Page<Product> searchByCategory(@Param("categoryId") Long categoryId, @Param("q") String q, Pageable pageable);
 
 	@Query("SELECT COUNT(p) FROM Product p WHERE p.category.id = :categoryId")

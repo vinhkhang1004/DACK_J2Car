@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useCart } from "../CartContext";
 
@@ -10,6 +11,18 @@ const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth();
   const { itemCount } = useCart();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [searchValue, setSearchValue] = useState(searchParams.get("q") || "");
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      navigate(`/san-pham?q=${encodeURIComponent(searchValue.trim())}`);
+    } else {
+      navigate("/san-pham");
+    }
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -57,13 +70,20 @@ export default function Layout() {
             )}
           </nav>
 
-          <div className="header-search">
-            <input type="text" placeholder="Tìm kiếm phụ tùng..." />
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </div>
+          <form className="header-search" onSubmit={handleSearch}>
+            <input 
+              type="text" 
+              placeholder="Tìm kiếm phụ tùng..." 
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+            <button type="submit" style={{ background: "none", border: "none", color: "inherit", padding: 0, cursor: "pointer", display: "flex" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </button>
+          </form>
 
           <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", flexShrink: 0 }}>
             <Link to={user ? "/profile" : "/dang-nhap"} style={{ color: "var(--muted)" }}>
