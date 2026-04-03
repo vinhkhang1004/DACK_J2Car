@@ -5,12 +5,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.J2AutoParts.dto.AuthResponse;
 import com.example.J2AutoParts.dto.LoginRequest;
+import com.example.J2AutoParts.dto.ProfileRequest;
 import com.example.J2AutoParts.dto.RegisterRequest;
 import com.example.J2AutoParts.dto.UserProfileResponse;
 import com.example.J2AutoParts.service.AuthService;
@@ -41,5 +43,15 @@ public class AuthController {
 			return ResponseEntity.status(401).build();
 		}
 		return ResponseEntity.ok(authService.currentProfile(principal));
+	}
+
+	@PutMapping("/profile")
+	public ResponseEntity<UserProfileResponse> updateProfile(
+			@AuthenticationPrincipal UserDetails principal,
+			@Valid @RequestBody ProfileRequest request) {
+		if (principal == null) {
+			return ResponseEntity.status(401).build();
+		}
+		return ResponseEntity.ok(authService.updateProfile(principal, request));
 	}
 }

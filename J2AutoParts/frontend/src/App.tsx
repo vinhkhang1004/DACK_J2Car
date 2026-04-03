@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="san-pham" element={<Products />} />
         <Route path="san-pham/:id" element={<ProductDetail />} />
         <Route path="cart" element={<Cart />} />
+        <Route path="profile" element={<Profile />} />
         <Route
           path="quan-tri"
           element={

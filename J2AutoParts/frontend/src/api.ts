@@ -32,10 +32,21 @@ export type AuthPayload = {
   roles: string[];
 };
 
+export type User = {
+  id: number;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  address: string | null;
+  roles: string[];
+};
+
 export type UserProfile = {
   id: number;
   email: string;
   fullName: string;
+  phone: string | null;
+  address: string | null;
   roles: string[];
 };
 
@@ -71,6 +82,26 @@ export type CartItem = {
   discountPrice: number | null;
   quantity: number;
   stockQuantity: number;
+};
+
+export type OrderStatus = "PENDING" | "SHIPPED" | "COMPLETED" | "CANCELLED";
+
+export type OrderItem = {
+  id: number;
+  productId: number;
+  productName: string;
+  productImageUrl: string | null;
+  quantity: number;
+  unitPrice: number;
+};
+
+export type Order = {
+  id: number;
+  orderDate: string;
+  totalAmount: number;
+  status: OrderStatus;
+  shippingAddress: string;
+  items: OrderItem[];
 };
 
 export type Paged<T> = {
