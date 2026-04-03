@@ -62,6 +62,17 @@ export type Product = {
   categoryName: string;
 };
 
+export type CartItem = {
+  id: number;
+  productId: number;
+  productName: string;
+  productImageUrl: string | null;
+  unitPrice: number;
+  discountPrice: number | null;
+  quantity: number;
+  stockQuantity: number;
+};
+
 export type Paged<T> = {
   content: T[];
   page: number;

@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
 import { useAuth } from "./AuthContext";
 
@@ -26,6 +27,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="san-pham" element={<Products />} />
         <Route path="san-pham/:id" element={<ProductDetail />} />
+        <Route path="cart" element={<Cart />} />
         <Route
           path="quan-tri"
           element={

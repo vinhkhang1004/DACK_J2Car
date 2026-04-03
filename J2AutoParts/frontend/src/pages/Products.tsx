@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, type Category, type Paged, type Product } from "../api";
+import { useCart } from "../CartContext";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
@@ -15,6 +16,7 @@ export default function Products() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [data, setData] = useState<Paged<Product> | null>(null);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     void api.get<Category[]>("/categories").then((r) => setCategories(r.data));
@@ -189,7 +191,11 @@ export default function Products() {
                         </span>
                       )}
                     </div>
-                    <button className="btn-add-cart">
+                    <button 
+                      className="btn-add-cart" 
+                      onClick={() => void addToCart(p.id, 1)}
+                      title="Thêm vào giỏ hàng"
+                    >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M12 5v14M5 12h14" />
                       </svg>
