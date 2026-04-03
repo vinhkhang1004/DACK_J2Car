@@ -68,8 +68,21 @@ public class AuthService {
 				.id(user.getId())
 				.email(user.getEmail())
 				.fullName(user.getFullName())
+				.phone(user.getPhone())
+				.address(user.getAddress())
 				.roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
 				.build();
+	}
+
+	@Transactional
+	public UserProfileResponse updateProfile(org.springframework.security.core.userdetails.UserDetails principal, com.example.J2AutoParts.dto.ProfileRequest request) {
+		User user = userRepository.findByEmail(principal.getUsername())
+				.orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại"));
+		user.setFullName(request.getFullName().trim());
+		user.setPhone(request.getPhone());
+		user.setAddress(request.getAddress());
+		userRepository.save(user);
+		return currentProfile(principal);
 	}
 
 	private AuthResponse buildAuthResponse(Authentication authentication) {
