@@ -65,12 +65,10 @@ export default function ProductDetail() {
   // Take first 4 for the core grid, or empty array
   const coreSpecs = specs.slice(0, 4);
 
-  // Common thumbnails for detail look
+  // Use actual images from the product
   const thumbnails = [
     p.imageUrl || "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800",
-    "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800",
-    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800",
-    "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800"
+    ...(p.additionalImageUrls || [])
   ];
 
   return (
@@ -126,8 +124,8 @@ export default function ProductDetail() {
             <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>4.8 (124 đánh giá)</span>
           </div>
 
-          <p className="muted" style={{ fontSize: "1.1rem", lineHeight: 1.6, marginBottom: "2.5rem" }}>
-            Được thiết kế để tản nhiệt tối ưu và giảm thiểu hiện tượng mất phanh. Dòng sản phẩm Kinetic của chúng tôi sở hữu cấu trúc vật liệu carbon cao cấp, đảm bảo độ bền tối đa trong điều kiện vận hành khắc nghiệt trên đường đua và đường phố.
+          <p className="muted" style={{ fontSize: "1.1rem", lineHeight: 1.6, marginBottom: "2.5rem", whiteSpace: "pre-line" }}>
+            {p.description || "Phụ tùng chất lượng cao được thiết kế tỉ mỉ để đảm bảo hiệu suất và độ bền tối đa cho phương tiện của bạn."}
           </p>
 
           <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: "2rem" }}>
@@ -214,12 +212,6 @@ export default function ProductDetail() {
             <p className="muted">Liên hệ để biết thêm thông số kỹ thuật chi tiết.</p>
           )}
 
-          {p.description && (
-            <div style={{ marginTop: "2rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border)" }}>
-               <h4 style={{ margin: "0 0 1rem", fontSize: "0.9rem", color: "var(--accent)" }}>Thông tin bổ sung từ Admin:</h4>
-               <p style={{ margin: 0, fontSize: "0.9rem", lineHeight: 1.5, opacity: 0.8 }}>{p.description}</p>
-            </div>
-          )}
         </div>
 
         <div>

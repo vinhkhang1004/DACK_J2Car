@@ -71,6 +71,7 @@ export type Product = {
   compatibility: string | null;
   categoryId: number;
   categoryName: string;
+  additionalImageUrls: string[];
 };
 
 export type CartItem = {
