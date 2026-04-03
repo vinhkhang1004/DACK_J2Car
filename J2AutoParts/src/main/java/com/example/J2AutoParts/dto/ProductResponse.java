@@ -25,4 +25,5 @@ public class ProductResponse {
 	private String compatibility;
 	private Long categoryId;
 	private String categoryName;
+	private java.util.List<String> additionalImageUrls;
 }
