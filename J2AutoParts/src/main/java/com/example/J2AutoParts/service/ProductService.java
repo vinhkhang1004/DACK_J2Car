@@ -63,9 +63,12 @@ public class ProductService {
 				.name(request.getName().trim())
 				.sku(request.getSku().trim())
 				.price(request.getPrice())
+				.discountPrice(request.getDiscountPrice())
 				.stockQuantity(request.getStockQuantity())
 				.description(request.getDescription())
 				.imageUrl(request.getImageUrl())
+				.specifications(request.getSpecifications())
+				.compatibility(request.getCompatibility())
 				.category(cat)
 				.build();
 		return toResponse(productRepository.save(p));
@@ -85,9 +88,12 @@ public class ProductService {
 		p.setName(request.getName().trim());
 		p.setSku(request.getSku().trim());
 		p.setPrice(request.getPrice());
+		p.setDiscountPrice(request.getDiscountPrice());
 		p.setStockQuantity(request.getStockQuantity());
 		p.setDescription(request.getDescription());
 		p.setImageUrl(request.getImageUrl());
+		p.setSpecifications(request.getSpecifications());
+		p.setCompatibility(request.getCompatibility());
 		p.setCategory(cat);
 		return toResponse(productRepository.save(p));
 	}
@@ -119,9 +125,12 @@ public class ProductService {
 				.name(p.getName())
 				.sku(p.getSku())
 				.price(p.getPrice())
+				.discountPrice(p.getDiscountPrice())
 				.stockQuantity(p.getStockQuantity())
 				.description(p.getDescription())
 				.imageUrl(p.getImageUrl())
+				.specifications(p.getSpecifications())
+				.compatibility(p.getCompatibility())
 				.categoryId(c.getId())
 				.categoryName(c.getName())
 				.build();

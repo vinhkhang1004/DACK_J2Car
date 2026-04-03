@@ -46,6 +46,22 @@ export default function ProductDetail() {
     );
   }
 
+  // Parse specifications: "Label: Value" per line
+  const specs = (p.specifications || "")
+    .split("\n")
+    .map(line => {
+      const parts = line.split(":");
+      if (parts.length < 2) return null;
+      return { 
+        label: parts[0].trim(), 
+        value: parts.slice(1).join(":").trim() 
+      };
+    })
+    .filter((s): s is { label: string; value: string } => s !== null);
+
+  // Take first 4 for the core grid, or empty array
+  const coreSpecs = specs.slice(0, 4);
+
   // Common thumbnails for detail look
   const thumbnails = [
     p.imageUrl || "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800",
@@ -112,8 +128,14 @@ export default function ProductDetail() {
           </p>
 
           <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: "2rem" }}>
-            <span style={{ fontSize: "2.5rem", fontWeight: 800 }}>{formatPrice(p.price)}</span>
-            <span className="muted" style={{ textDecoration: "line-through", fontSize: "1rem" }}>{formatPrice(p.price * 1.2)}</span>
+            {p.discountPrice && p.discountPrice > 0 ? (
+              <>
+                <span style={{ fontSize: "2.5rem", fontWeight: 800 }}>{formatPrice(p.discountPrice)}</span>
+                <span className="muted" style={{ textDecoration: "line-through", fontSize: "1rem" }}>{formatPrice(p.price)}</span>
+              </>
+            ) : (
+              <span style={{ fontSize: "2.5rem", fontWeight: 800 }}>{formatPrice(p.price)}</span>
+            )}
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
@@ -130,24 +152,16 @@ export default function ProductDetail() {
             CÓ SẴN TRONG KHO ({p.stockQuantity} sản phẩm) - GIAO HÀNG TRONG 24H
           </div>
 
-          <div className="core-spec-grid">
-            <div className="spec-item-box">
-              <span className="label">Chất liệu</span>
-              <span className="value">G3000 Gray Iron</span>
+          {coreSpecs.length > 0 && (
+            <div className="core-spec-grid">
+              {coreSpecs.map((s, i) => (
+                <div key={i} className="spec-item-box">
+                  <span className="label">{s.label}</span>
+                  <span className="value">{s.value}</span>
+                </div>
+              ))}
             </div>
-            <div className="spec-item-box">
-              <span className="label">Đường kính</span>
-              <span className="value">355mm (14.0")</span>
-            </div>
-            <div className="spec-item-box">
-              <span className="label">Kiểu rãnh</span>
-              <span className="value">Pillar Vane</span>
-            </div>
-            <div className="spec-item-box">
-              <span className="label">Hoàn thiện</span>
-              <span className="value">Silver Zinc Plated</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -157,21 +171,19 @@ export default function ProductDetail() {
           <h2 style={{ fontSize: "2rem", marginBottom: "2.5rem", borderLeft: "4px solid var(--accent)", paddingLeft: "1.5rem" }}>
             Thông số kỹ thuật
           </h2>
-          <div className="tech-specs-list">
-            {[
-              { label: "Mã linh kiện", value: p.sku },
-              { label: "Vị trí lắp", value: "Trước Trái / Phải" },
-              { label: "Kiểu bu lông", value: "5 x 114.3mm" },
-              { label: "Độ dày danh định", value: "32.0mm" },
-              { label: "Trọng lượng", value: "24.5 lbs" },
-              { label: "Xử lý bề mặt", value: "Anti-Corrosive E-Coat" },
-            ].map(item => (
-              <div key={item.label} className="tech-spec-row">
-                <span className="label">{item.label}</span>
-                <span className="value">{item.value}</span>
-              </div>
-            ))}
-          </div>
+          {specs.length > 0 ? (
+            <div className="tech-specs-list">
+              {specs.map((item, i) => (
+                <div key={i} className="tech-spec-row">
+                  <span className="label">{item.label}</span>
+                  <span className="value">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="muted">Liên hệ để biết thêm thông số kỹ thuật chi tiết.</p>
+          )}
+
           {p.description && (
             <div style={{ marginTop: "2rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid var(--border)" }}>
                <h4 style={{ margin: "0 0 1rem", fontSize: "0.9rem", color: "var(--accent)" }}>Thông tin bổ sung từ Admin:</h4>
@@ -184,30 +196,32 @@ export default function ProductDetail() {
           <h2 style={{ fontSize: "2rem", marginBottom: "2.5rem", borderLeft: "4px solid #00deff", paddingLeft: "1.5rem" }}>
             Xe tương thích
           </h2>
-          <div className="compatibility-card">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-            Tương thích hoàn hảo với các cấu hình Performance Pack.
-          </div>
-          
-          {[
-            { model: "BMW M3 (F80)", years: "2014 - 2018", tag: "EXACT FIT" },
-            { model: "BMW M4 (F82/F83)", years: "2014 - 2020", tag: "EXACT FIT" },
-            { model: "Toyota Supra (A90)", years: "2020 - Hiện tại", tag: "EXACT FIT" },
-            { model: "BMW 340i (F30)", years: "M-Sport Brakes Only", tag: "REQUIRES ADAPTER" },
-          ].map((item, idx) => (
-            <div key={idx} className="vehicle-item">
-              <div className="vehicle-info">
-                <h5>{item.model}</h5>
-                <span>{item.years}</span>
+          {p.compatibility ? (
+            <>
+              <div className="compatibility-card">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+                Tương thích hoàn hảo với các cấu hình được liệt kê.
               </div>
-              <div className="tag-fit" style={item.tag === "REQUIRES ADAPTER" ? { color: "#ffb899" } : {}}>
-                {item.tag}
+              <div style={{ 
+                whiteSpace: "pre-line", 
+                lineHeight: 1.6, 
+                fontSize: "1rem", 
+                color: "var(--text)", 
+                opacity: 0.8,
+                background: "rgba(255,255,255,0.02)",
+                padding: "1.5rem",
+                borderRadius: "12px",
+                border: "1px solid var(--border)"
+              }}>
+                {p.compatibility}
               </div>
-            </div>
-          ))}
+            </>
+          ) : (
+            <p className="muted">Vui lòng cung cấp số VIN để kiểm tra độ tương thích chính xác.</p>
+          )}
         </div>
       </div>
 
