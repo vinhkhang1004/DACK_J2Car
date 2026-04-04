@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class AuthController {
 
 	private final AuthService authService;
@@ -53,5 +54,18 @@ public class AuthController {
 			return ResponseEntity.status(401).build();
 		}
 		return ResponseEntity.ok(authService.updateProfile(principal, request));
+	}
+
+	@GetMapping("/debug")
+	public ResponseEntity<java.util.Map<String, Object>> debug(@AuthenticationPrincipal UserDetails principal) {
+		log.info("Debug endpoint called. Principal: {}", principal);
+		if (principal == null) {
+			return ResponseEntity.status(401).body(java.util.Map.of("error", "NULL PRINCIPAL (Unauthenticated)"));
+		}
+		return ResponseEntity.ok(java.util.Map.of(
+				"username", principal.getUsername(),
+				"authorities", principal.getAuthorities().stream().map(Object::toString).toList(),
+				"enabled", principal.isEnabled()
+		));
 	}
 }

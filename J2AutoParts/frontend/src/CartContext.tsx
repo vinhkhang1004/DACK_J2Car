@@ -6,6 +6,7 @@ type CartContextType = {
   cart: CartItem[];
   itemCount: number;
   totalAmount: number;
+  total: number;
   loading: boolean;
   addToCart: (productId: number, quantity?: number) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
@@ -86,6 +87,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const price = item.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.unitPrice;
     return acc + price * item.quantity;
   }, 0);
+  const total = cart.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
 
   return (
     <CartContext.Provider
@@ -93,6 +95,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         cart,
         itemCount,
         totalAmount,
+        total,
         loading,
         addToCart,
         updateQuantity,

@@ -85,6 +85,7 @@ public class DataInitializer {
 						.price(new BigDecimal("185000"))
 						.stockQuantity(80)
 						.description("Lọc gió OEM tương đương")
+						.imageUrl("https://plus.unsplash.com/premium_photo-1661339233342-9988a876a378?w=600&q=80")
 						.category(loc)
 						.build());
 			}

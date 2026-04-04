@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const TOKEN_KEY = "j2_token";
+let on401Callback: (() => void) | null = null;
 
 export const api = axios.create({
   baseURL: "/api",
@@ -14,6 +15,21 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem(TOKEN_KEY);
+      if (on401Callback) on401Callback();
+    }
+    return Promise.reject(error);
+  }
+);
+
+export function setOn401(cb: () => void) {
+  on401Callback = cb;
+}
 
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
@@ -72,6 +88,12 @@ export type Product = {
   categoryId: number;
   categoryName: string;
   additionalImageUrls: string[];
+};
+
+export type OrderRequest = {
+  shippingAddress: string;
+  phone: string;
+  items: { productId: number; quantity: number }[];
 };
 
 export type CartItem = {
