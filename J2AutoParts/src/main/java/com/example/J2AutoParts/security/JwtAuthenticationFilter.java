@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
@@ -30,13 +31,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			@NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain) throws ServletException, IOException {
 		String token = resolveToken(request);
-		if (StringUtils.hasText(token) && jwtTokenProvider.validate(token)) {
-			String email = jwtTokenProvider.getEmail(token);
-			UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-			var auth = new UsernamePasswordAuthenticationToken(
-					userDetails, null, userDetails.getAuthorities());
-			auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-			SecurityContextHolder.getContext().setAuthentication(auth);
+		if (StringUtils.hasText(token)) {
+			log.info("JWT Token resolved: {}...", token.substring(0, Math.min(token.length(), 10)));
+			if (jwtTokenProvider.validate(token)) {
+				String email = jwtTokenProvider.getEmail(token);
+				UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+				var auth = new UsernamePasswordAuthenticationToken(
+						userDetails, null, userDetails.getAuthorities());
+				auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				SecurityContextHolder.getContext().setAuthentication(auth);
+				log.info("Authentication set for user: {} with roles: {}", email, userDetails.getAuthorities());
+			} else {
+				log.warn("JWT Token validation failed");
+			}
 		}
 		filterChain.doFilter(request, response);
 	}

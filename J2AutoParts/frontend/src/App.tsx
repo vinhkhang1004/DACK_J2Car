@@ -8,6 +8,7 @@ import Profile from "./pages/Profile";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 import Admin from "./pages/Admin";
 import { useAuth } from "./AuthContext";
 
@@ -27,9 +28,10 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="san-pham" element={<Products />} />
-        <Route path="san-pham/:id" element={<ProductDetail />} />
-        <Route path="cart" element={<Cart />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="/san-pham/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/profile" element={<Profile />} />
         <Route
           path="quan-tri"
           element={
