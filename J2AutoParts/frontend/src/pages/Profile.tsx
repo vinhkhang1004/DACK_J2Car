@@ -1,208 +1,194 @@
-import { useEffect, useState } from "react";
-import { api, type Order } from "../api";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { api, type Order } from "../api";
+
+type Tab = "profile" | "orders";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, any> = {
-    PENDING: { bg: "rgba(255, 171, 0, 0.1)", color: "#ffab00", label: "Chờ xử lý" },
-    SHIPPED: { bg: "rgba(0, 184, 217, 0.1)", color: "#00b8d9", label: "Đang giao" },
-    COMPLETED: { bg: "rgba(54, 179, 126, 0.1)", color: "#36b37e", label: "Hoàn thành" },
-    CANCELLED: { bg: "rgba(255, 86, 48, 0.1)", color: "#ff5630", label: "Đã hủy" },
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles: Record<string, { bg: string; color: string; label: string }> = {
+    PENDING: { bg: "rgba(255,165,0,0.15)", color: "#ffa500", label: "Chờ xử lý" },
+    SHIPPED: { bg: "rgba(0,191,255,0.15)", color: "#00bfff", label: "Đang giao" },
+    COMPLETED: { bg: "rgba(34,197,94,0.15)", color: "#22c55e", label: "Hoàn thành" },
+    CANCELLED: { bg: "rgba(239,68,68,0.15)", color: "#ef4444", label: "Đã hủy" },
   };
   const s = styles[status] || styles.PENDING;
   return (
-    <span style={{
-      padding: "0.25rem 0.75rem",
-      borderRadius: "6px",
-      fontSize: "0.75rem",
-      fontWeight: 700,
-      background: s.bg,
-      color: s.color,
-      textTransform: "uppercase",
+    <span style={{ 
+      background: s.bg, 
+      color: s.color, 
+      padding: "0.25rem 0.75rem", 
+      borderRadius: "100px", 
+      fontSize: "0.75rem", 
+      fontWeight: 800,
+      border: `1px solid ${s.color}33`
     }}>
       {s.label}
     </span>
   );
-}
+};
 
 export default function Profile() {
   const { user, refreshProfile } = useAuth();
-  const [activeTab, setActiveTab] = useState<"info" | "orders">("info");
+  const location = useLocation();
+  const [tab, setTab] = useState<Tab>("profile");
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loadingOrders, setLoadingOrders] = useState(false);
   
-  // Profile Form State
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [updating, setUpdating] = useState(false);
+  // Edit Profile States
+  const [fullName, setFullName] = useState(user?.fullName || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [address, setAddress] = useState(user?.address || "");
+  const [msg, setMsg] = useState<string | null>(location.state?.msg || null);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setFullName(user.fullName);
-      setPhone(user.phone || "");
-      setAddress(user.address || "");
+    if (tab === "orders") {
+      void api.get<Order[]>("/orders").then(r => setOrders(r.data));
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (activeTab === "orders" && user) {
-      setLoadingOrders(true);
-      void api.get<Order[]>("/orders")
-        .then(r => setOrders(r.data))
-        .finally(() => setLoadingOrders(false));
-    }
-  }, [activeTab, user]);
+  }, [tab]);
 
   async function handleUpdateProfile(e: React.FormEvent) {
     e.preventDefault();
-    setUpdating(true);
+    setMsg(null); setErr(null);
     try {
       await api.put("/auth/profile", { fullName, phone, address });
       await refreshProfile();
-      alert("Cập nhật thông tin thành công!");
-    } catch (e: any) {
-      alert(e.response?.data?.message || "Lỗi khi cập nhật thông tin");
-    } finally {
-      setUpdating(false);
+      setMsg("Cập nhật thông tin thành công");
+    } catch (ex: any) {
+      setErr("Lỗi cập nhật hồ sơ");
     }
   }
 
-  if (!user) return <div className="container muted" style={{ paddingTop: "8rem", textAlign: "center" }}>Vui lòng đăng nhập để xem thông tin.</div>;
+  async function handleCancelOrder(orderId: number) {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không? Quá trình này không thể hoàn tác.")) return;
+    setErr(null);
+    try {
+      await api.put(`/orders/${orderId}/cancel`);
+      const r = await api.get<Order[]>("/orders");
+      setOrders(r.data);
+      setMsg("Đã hủy đơn hàng thành công. Tồn kho đã được hoàn lại.");
+    } catch (ex: any) {
+      setErr(ex.response?.data?.message || "Lỗi khi hủy đơn hàng");
+    }
+  }
 
   return (
-    <div className="container" style={{ paddingTop: "4rem", paddingBottom: "8rem" }}>
-      <header style={{ marginBottom: "3rem", textAlign: "center" }}>
-        <div className="badge-precision" style={{ marginBottom: "0.75rem" }}>
-          USER ACCOUNT CENTER
-        </div>
-        <h1 style={{ fontSize: "3rem", fontWeight: 800 }}>Xin chào, <span className="text-gradient">{user.fullName}</span></h1>
-        <p className="muted">Quản lý thông tin kỹ thuật và theo dõi tiến độ đơn hàng của bạn.</p>
+    <div className="container" style={{ paddingTop: "4rem", paddingBottom: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <header style={{ marginBottom: "3rem", textAlign: "center", width: "100%" }}>
+        <h1 style={{ marginBottom: "0.5rem" }}>Tài khoản của <span className="text-gradient">{user?.fullName.split(' ')[0]}</span></h1>
+        <p className="muted">Quản lý thông tin cá nhân và quản lý đơn hàng của bạn.</p>
       </header>
 
-      <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "3rem", borderBottom: "1px solid var(--border)", paddingBottom: "1px" }}>
+      {msg && <div className="success-banner" style={{ marginBottom: "2.5rem", width: "100%", maxWidth: "800px" }}>{msg}</div>}
+      {err && <div className="error-banner" style={{ marginBottom: "2.5rem", width: "100%", maxWidth: "800px" }}>{err}</div>}
+
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "3rem", background: "rgba(255,255,255,0.02)", padding: "0.5rem", borderRadius: "12px", border: "1px solid var(--border)" }}>
         <button 
-          onClick={() => setActiveTab("info")}
-          style={{
-            padding: "1rem 2rem",
-            background: "none",
-            border: "none",
-            borderBottom: activeTab === "info" ? "3px solid var(--accent)" : "3px solid transparent",
-            color: activeTab === "info" ? "white" : "var(--muted)",
-            fontWeight: 700,
-            cursor: "pointer",
-            transition: "all 0.2s"
-          }}
+          onClick={() => setTab("profile")}
+          className={`btn ${tab === "profile" ? "btn-primary" : "btn-ghost"}`}
+          style={{ padding: "0.75rem 2rem" }}
         >
           Thông tin cá nhân
         </button>
         <button 
-          onClick={() => setActiveTab("orders")}
-          style={{
-            padding: "1rem 2rem",
-            background: "none",
-            border: "none",
-            borderBottom: activeTab === "orders" ? "3px solid var(--accent)" : "3px solid transparent",
-            color: activeTab === "orders" ? "white" : "var(--muted)",
-            fontWeight: 700,
-            cursor: "pointer",
-            transition: "all 0.2s"
-          }}
+          onClick={() => setTab("orders")}
+          className={`btn ${tab === "orders" ? "btn-primary" : "btn-ghost"}`}
+          style={{ padding: "0.75rem 2rem" }}
         >
-          Lịch sử đơn hàng
+          Đơn hàng của tôi
         </button>
       </div>
 
-      {activeTab === "info" ? (
-        <div style={{ maxWidth: 660, margin: "0 auto" }}>
-          <form className="card" style={{ display: "grid", gap: "1.5rem" }} onSubmit={handleUpdateProfile}>
-            <div className="field">
-              <label>Địa chỉ Email (Không thể thay đổi)</label>
-              <input value={user.email} disabled style={{ opacity: 0.6, cursor: "not-allowed" }} />
-            </div>
+      <div style={{ width: "100%", maxWidth: "800px" }}>
+        {tab === "profile" && (
+          <form className="card" onSubmit={handleUpdateProfile} style={{ padding: "3rem" }}>
+            <h3 style={{ marginTop: 0, marginBottom: "2rem" }}>Chỉnh sửa thông tin</h3>
             <div className="field">
               <label>Họ và tên</label>
               <input value={fullName} onChange={e => setFullName(e.target.value)} required />
             </div>
             <div className="field">
-              <label>Số điện thoại</label>
-              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0xxx xxx xxx" />
+              <label>Địa chỉ Email</label>
+              <input value={user?.email} disabled style={{ opacity: 0.6 }} />
             </div>
             <div className="field">
-              <label>Địa chỉ giao hàng mặc định</label>
-              <textarea 
-                value={address} 
-                onChange={e => setAddress(e.target.value)}
-                style={{
-                  width: "100%",
-                  minHeight: "100px",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  color: "white",
-                  fontSize: "1rem"
-                }}
-                placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
-              />
+              <label>Số điện thoại</label>
+              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="09xx xxx xxx" />
             </div>
-            <button className="btn btn-primary" style={{ height: "48px", padding: "0 2.5rem", marginTop: "1rem" }} disabled={updating}>
-              {updating ? "Đang lưu..." : "Lưu thay đổi"}
-            </button>
+            <div className="field">
+              <label>Địa chỉ mặc định</label>
+              <textarea value={address} onChange={e => setAddress(e.target.value)} rows={3} placeholder="Số nhà, tên đường, phường/xã..." />
+            </div>
+            <button className="btn btn-primary" style={{ width: "100%", marginTop: "1rem" }}>Lưu thay đổi</button>
           </form>
-        </div>
-      ) : (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          {loadingOrders ? (
-            <div style={{ padding: "4rem", textAlign: "center" }} className="muted">Đang tải lịch sử đơn hàng...</div>
-          ) : orders.length === 0 ? (
-            <div style={{ padding: "4rem", textAlign: "center" }} className="muted">Bạn chưa có đơn hàng nào.</div>
-          ) : (
-            <table className="data-table" style={{ margin: 0 }}>
-              <thead>
-                <tr>
-                  <th style={{ paddingLeft: "1.5rem" }}>Mã đơn hàng</th>
-                  <th>Ngày đặt</th>
-                  <th>Trạng thái</th>
-                  <th>Tổng cộng</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map(o => (
-                  <tr key={o.id}>
-                    <td style={{ paddingLeft: "1.5rem" }}>
-                      <span style={{ fontWeight: 800 }}>#ORD-{o.id}</span>
-                    </td>
-                    <td className="muted" style={{ fontSize: "0.85rem" }}>{formatDate(o.orderDate)}</td>
-                    <td><StatusBadge status={o.status} /></td>
-                    <td><span style={{ fontWeight: 700, color: "white" }}>{formatPrice(o.totalAmount)}</span></td>
-                    <td style={{ textAlign: "right", paddingRight: "1.5rem" }}>
-                      <button className="btn btn-ghost" style={{ fontSize: "0.8rem", padding: "0.4rem 0.8rem" }}>
-                        Chi tiết
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+        )}
+
+        {tab === "orders" && (
+          <div style={{ display: "grid", gap: "1.5rem" }}>
+            {orders.length === 0 ? (
+              <div className="card" style={{ textAlign: "center", padding: "4rem" }}>
+                <p className="muted">Bạn chưa có đơn hàng nào.</p>
+                <Link to="/san-pham" className="btn btn-ghost" style={{ marginTop: "1rem" }}>Bắt đầu mua sắm ngay</Link>
+              </div>
+            ) : (
+              orders.map(o => (
+                <div key={o.id} className="card" style={{ padding: "2rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "2rem" }}>
+                    <div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: "0.25rem" }}>MÃ ĐƠN: #ORD-{o.id}</div>
+                      <div className="muted" style={{ fontSize: "0.85rem" }}>Ngày đặt: {new Date(o.orderDate).toLocaleDateString("vi-VN")}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                      {o.status === "PENDING" && (
+                        <button 
+                          className="btn btn-ghost" 
+                          style={{ color: "#ef4444", fontSize: "0.75rem", padding: "0.4rem 0.8rem", height: "auto" }}
+                          onClick={() => handleCancelOrder(o.id)}
+                        >
+                          Hủy đơn hàng
+                        </button>
+                      )}
+                      <StatusBadge status={o.status} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gap: "1.25rem", marginBottom: "2rem" }}>
+                    {o.items.map(item => (
+                      <div key={item.id} style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                        <img 
+                          src={item.productImageUrl || "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=200&q=80"} 
+                          style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover", background: "var(--bg-lighter)" }} 
+                          alt={item.productName}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>{item.productName}</div>
+                          <div className="muted" style={{ fontSize: "0.85rem" }}>x{item.quantity} - {formatPrice(item.unitPrice)}</div>
+                        </div>
+                        <div style={{ fontWeight: 700 }}>{formatPrice(item.unitPrice * item.quantity)}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                    <div style={{ maxWidth: "70%" }}>
+                      <div className="muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, marginBottom: "0.5rem" }}>Địa chỉ giao hàng</div>
+                      <div style={{ fontSize: "0.85rem", lineHeight: 1.5, opacity: 0.9 }}>{o.shippingAddress}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div className="muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, marginBottom: "0.25rem" }}>Tổng thanh toán</div>
+                      <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--accent)" }}>{formatPrice(o.totalAmount)}</div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

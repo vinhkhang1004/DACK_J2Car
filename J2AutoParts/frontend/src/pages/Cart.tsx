@@ -195,13 +195,9 @@ export default function Cart() {
                 <span style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent)" }}>{formatPrice(totalAmount)}</span>
               </div>
             </div>
-            <button 
-              className="btn btn-primary" 
-              style={{ width: "100%", height: "56px", fontSize: "1rem", fontWeight: 700 }}
-              onClick={() => alert("Tính năng thanh toán đang được phát triển!")}
-            >
-              Tiến hành đặt hàng
-            </button>
+            <Link to="/checkout" className="btn btn-primary" style={{ width: "100%", height: "56px", fontSize: "1rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
+               Tiến hành thanh toán
+            </Link>
             <p className="muted" style={{ fontSize: "0.7rem", textAlign: "center", marginTop: "1rem" }}>
                Bằng cách đặt hàng, bạn đồng ý với các điều khoản và quy định của J2 Auto Parts.
             </p>

@@ -41,6 +41,7 @@ public class AdminController {
 	private final RoleRepository roleRepository;
 
 	@GetMapping("/users")
+	@org.springframework.transaction.annotation.Transactional(readOnly = true)
 	public List<UserProfileResponse> getUsers() {
 		return userRepository.findAll().stream().map(u -> UserProfileResponse.builder()
 				.id(u.getId())
@@ -74,11 +75,13 @@ public class AdminController {
 	}
 
 	@GetMapping("/orders")
+	@org.springframework.transaction.annotation.Transactional(readOnly = true)
 	public List<OrderResponse> getAllOrders() {
 		return orderRepository.findAllByOrderByOrderDateDesc().stream().map(this::toOrderResponse).collect(Collectors.toList());
 	}
 
 	@PutMapping("/orders/{id}/status")
+	@org.springframework.transaction.annotation.Transactional
 	public ResponseEntity<OrderResponse> updateOrderStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
 		Order order = orderRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng"));
 		String statusStr = body.get("status");

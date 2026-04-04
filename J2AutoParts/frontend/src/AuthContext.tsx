@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api, getToken, setToken, type AuthPayload, type UserProfile } from "./api";
+import { api, getToken, setToken, setOn401, type AuthPayload, type UserProfile } from "./api";
 
 type AuthContextValue = {
   user: UserProfile | null;
@@ -45,6 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void refreshProfile();
+    setOn401(() => {
+      setToken(null);
+      setUser(null);
+    });
   }, [refreshProfile]);
 
   const login = useCallback(async (email: string, password: string) => {
