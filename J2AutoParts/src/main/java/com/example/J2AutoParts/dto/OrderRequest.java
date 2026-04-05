@@ -18,6 +18,9 @@ public class OrderRequest {
 	@Size(max = 20)
 	private String phone;
 
+	@Size(max = 50)
+	private String couponCode;
+
 	@NotEmpty
 	private List<OrderItemRequest> items;
 
