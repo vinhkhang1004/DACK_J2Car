@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { api, type Order } from "../api";
+import { api, type Order, type Product } from "../api";
+import { useCart } from "../CartContext";
 
-type Tab = "profile" | "orders";
+type Tab = "profile" | "orders" | "wishlist";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
@@ -44,10 +45,15 @@ export default function Profile() {
   const [address, setAddress] = useState(user?.address || "");
   const [msg, setMsg] = useState<string | null>(location.state?.msg || null);
   const [err, setErr] = useState<string | null>(null);
+  
+  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (tab === "orders") {
       void api.get<Order[]>("/orders").then(r => setOrders(r.data));
+    } else if (tab === "wishlist") {
+      void api.get<Product[]>("/wishlists").then(r => setWishlist(r.data));
     }
   }, [tab]);
 
@@ -76,6 +82,16 @@ export default function Profile() {
     }
   }
 
+  async function handleRemoveWishlist(productId: number) {
+    try {
+      await api.post(`/wishlists/${productId}`);
+      setWishlist(wishlist.filter(p => p.id !== productId));
+      setMsg("Đã xoá khỏi danh sách yêu thích");
+    } catch (e) {
+      setErr("Lỗi khi xoá phẩm khỏi danh sách yêu thích");
+    }
+  }
+
   return (
     <div className="container" style={{ paddingTop: "4rem", paddingBottom: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
       <header style={{ marginBottom: "3rem", textAlign: "center", width: "100%" }}>
@@ -100,6 +116,13 @@ export default function Profile() {
           style={{ padding: "0.75rem 2rem" }}
         >
           Đơn hàng của tôi
+        </button>
+        <button 
+          onClick={() => setTab("wishlist")}
+          className={`btn ${tab === "wishlist" ? "btn-primary" : "btn-ghost"}`}
+          style={{ padding: "0.75rem 2rem" }}
+        >
+          Danh sách yêu thích
         </button>
       </div>
 
@@ -182,6 +205,53 @@ export default function Profile() {
                       <div className="muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, marginBottom: "0.25rem" }}>Tổng thanh toán</div>
                       <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--accent)" }}>{formatPrice(o.totalAmount)}</div>
                     </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {tab === "wishlist" && (
+          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "1fr" }}>
+            {wishlist.length === 0 ? (
+              <div className="card" style={{ textAlign: "center", padding: "4rem" }}>
+                <p className="muted">Danh sách yêu thích của bạn đang trống.</p>
+                <Link to="/san-pham" className="btn btn-ghost" style={{ marginTop: "1rem" }}>Khám phá phụ tùng</Link>
+              </div>
+            ) : (
+              wishlist.map(p => (
+                <div key={p.id} className="card" style={{ padding: "1.5rem", display: "flex", gap: "1.5rem", alignItems: "center" }}>
+                  <img 
+                    src={p.imageUrl || "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=200&q=80"} 
+                    style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", background: "var(--bg-lighter)" }} 
+                    alt={p.name}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <Link to={`/san-pham/${p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                      <h4 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", fontWeight: 700 }}>{p.name}</h4>
+                    </Link>
+                    <div style={{ color: "var(--accent)", fontWeight: 800, fontSize: "1.1rem", marginBottom: "0.5rem" }}>
+                      {formatPrice(p.discountPrice || p.price)}
+                    </div>
+                    <div className="muted" style={{ fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                      {p.description}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: "150px" }}>
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={() => void addToCart(p.id, 1)}
+                    >
+                      Thêm vào giỏ
+                    </button>
+                    <button 
+                      className="btn btn-ghost" 
+                      onClick={() => handleRemoveWishlist(p.id)}
+                      style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}
+                    >
+                      Xoá khỏi danh sách
+                    </button>
                   </div>
                 </div>
               ))
