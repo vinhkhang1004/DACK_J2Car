@@ -43,6 +43,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
 						.requestMatchers(
 							"/", "/index.html", "/favicon.ico", "/manifest.json",
 							"/**/*.js", "/**/*.css", "/**/*.html", "/**/*.json",
