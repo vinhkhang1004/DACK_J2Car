@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../CartContext";
 import { useAuth } from "../AuthContext";
-import { api, type OrderRequest } from "../api";
+import { api, type OrderRequest, type Coupon } from "../api";
 
 export default function Checkout() {
   const { user } = useAuth();
@@ -12,6 +12,11 @@ export default function Checkout() {
   const [phone, setPhone] = useState(user?.phone || "");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponErr, setCouponErr] = useState<string | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   if (cart.length === 0) {
     return (
@@ -33,6 +38,7 @@ export default function Checkout() {
     const request: OrderRequest = {
       shippingAddress: address,
       phone: phone,
+      couponCode: appliedCoupon?.code,
       items: cart.map(item => ({
         productId: item.productId,
         quantity: item.quantity
@@ -137,10 +143,65 @@ export default function Checkout() {
                 <span className="muted">Phí vận chuyển</span>
                 <span style={{ color: "#22c55e", fontWeight: 600 }}>MIỄN PHÍ</span>
               </div>
+              
+              <div style={{ marginBottom: "1.5rem" }}>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input 
+                    type="text" 
+                    placeholder="Nhập mã giảm giá..." 
+                    value={couponCode} 
+                    onChange={e => setCouponCode(e.target.value)}
+                    style={{ flex: 1, padding: "0.5rem", borderRadius: "6px", border: "1px solid var(--border)", background: "transparent", color: "white" }}
+                    disabled={appliedCoupon != null}
+                  />
+                  {!appliedCoupon ? (
+                    <button 
+                      type="button" 
+                      className="btn btn-ghost" 
+                      onClick={async () => {
+                        if (!couponCode.trim()) return;
+                        setApplyingCoupon(true);
+                        setCouponErr(null);
+                        try {
+                          const res = await api.get<Coupon>(`/coupons/validate?code=${couponCode.trim()}`);
+                          setAppliedCoupon(res.data);
+                        } catch (ex: any) {
+                          setCouponErr(ex.response?.data?.message || "Mã không hợp lệ");
+                        } finally {
+                          setApplyingCoupon(false);
+                        }
+                      }}
+                      disabled={applyingCoupon || !couponCode.trim()}
+                      style={{ padding: "0.5rem 1rem" }}
+                    >
+                      {applyingCoupon ? "..." : "Áp dụng"}
+                    </button>
+                  ) : (
+                    <button 
+                      type="button" 
+                      className="btn btn-ghost" 
+                      onClick={() => { setAppliedCoupon(null); setCouponCode(""); }}
+                      style={{ padding: "0.5rem 1rem", color: "var(--danger)" }}
+                    >
+                      Hủy
+                    </button>
+                  )}
+                </div>
+                {couponErr && <div style={{ color: "var(--danger)", fontSize: "0.8rem", marginTop: "0.5rem" }}>{couponErr}</div>}
+                {appliedCoupon && <div style={{ color: "var(--accent)", fontSize: "0.8rem", marginTop: "0.5rem" }}>Đã áp dụng mã giảm giá {appliedCoupon.discountPercent}%</div>}
+              </div>
+
+              {appliedCoupon && (
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem", color: "var(--accent)" }}>
+                  <span>Giảm giá ({appliedCoupon.discountPercent}%)</span>
+                  <span>-{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(total * (appliedCoupon.discountPercent / 100))}</span>
+                </div>
+              )}
+
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ fontWeight: 700, fontSize: "1.1rem" }}>Tổng cộng</span>
                 <span style={{ fontWeight: 900, fontSize: "1.8rem", color: "var(--accent)" }}>
-                  {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(total)}
+                  {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(appliedCoupon ? total - (total * (appliedCoupon.discountPercent / 100)) : total)}
                 </span>
               </div>
             </div>

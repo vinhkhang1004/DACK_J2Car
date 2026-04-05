@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { api, type Category, type Product, type User, type Order, type DashboardStats } from "../api";
+import { api, type Category, type Product, type User, type Order, type DashboardStats, type Coupon } from "../api";
 
-type Tab = "products" | "categories" | "users" | "orders" | "stats";
+type Tab = "products" | "categories" | "users" | "orders" | "coupons" | "stats";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
@@ -23,6 +23,7 @@ export default function Admin() {
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   
   const [msg, setMsg] = useState<string | null>(null);
@@ -47,6 +48,12 @@ export default function Admin() {
   const [pCategoryId, setPCategoryId] = useState<number | "">("");
   const [editProductId, setEditProductId] = useState<number | null>(null);
 
+  // Coupon State
+  const [cCode, setCCode] = useState("");
+  const [cDiscount, setCDiscount] = useState("");
+  const [cActive, setCActive] = useState(true);
+  const [editCouponId, setEditCouponId] = useState<number | null>(null);
+
   const loadData = async () => {
     try {
       const cats = await api.get<Category[]>("/categories");
@@ -61,6 +68,9 @@ export default function Admin() {
       } else if (tab === "orders") {
         const ords = await api.get<Order[]>("/admin/orders");
         setOrders(ords.data);
+      } else if (tab === "coupons") {
+        const coups = await api.get<Coupon[]>("/coupons");
+        setCoupons(coups.data);
       } else if (tab === "stats") {
         const st = await api.get<DashboardStats>("/admin/stats");
         setStats(st.data);
@@ -93,6 +103,31 @@ export default function Admin() {
       setMsg("Đã xóa danh mục");
       void loadData();
     } catch (ex: any) { setErr(ex.response?.data?.message || "Lỗi xóa danh mục"); }
+  }
+
+  async function onSaveCoupon(e: FormEvent) {
+    e.preventDefault();
+    try {
+      const payload = {
+        code: cCode.toUpperCase(),
+        discountPercent: Number(cDiscount),
+        active: cActive,
+      };
+      if (editCouponId) await api.put(`/coupons/${editCouponId}`, payload);
+      else await api.post("/coupons", payload);
+      setCCode(""); setCDiscount(""); setCActive(true); setEditCouponId(null);
+      setMsg("Đã lưu mã giảm giá");
+      void loadData();
+    } catch (ex: any) { setErr(ex.response?.data?.message || "Lỗi lưu mã giảm giá"); }
+  }
+
+  async function deleteCoupon(id: number) {
+    if (!confirm("Xóa mã này?")) return;
+    try {
+      await api.delete(`/coupons/${id}`);
+      setMsg("Đã xóa mã giảm giá");
+      void loadData();
+    } catch (ex: any) { setErr("Lỗi xóa mã"); }
   }
 
   async function onSaveProduct(e: FormEvent) {
@@ -157,6 +192,15 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function startEditCoupon(c: Coupon) {
+    setEditCouponId(c.id);
+    setCCode(c.code);
+    setCDiscount(String(c.discountPercent));
+    setCActive(c.active);
+    setMsg(null); setErr(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="container" style={{ paddingTop: "2rem" }}>
       <header style={{ marginBottom: "2.5rem" }}>
@@ -173,6 +217,7 @@ export default function Admin() {
           { id: "categories", label: "Quản lý danh mục" },
           { id: "users", label: "Quản lý User" },
           { id: "orders", label: "Quản lý đơn hàng" },
+          { id: "coupons", label: "Mã giảm giá" },
           { id: "stats", label: "Thống kê" }
         ].map(t => (
           <button 
@@ -346,6 +391,82 @@ export default function Admin() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === "coupons" && (
+        <div style={{ display: "grid", gap: "3rem" }}>
+          <form className="card" onSubmit={onSaveCoupon} style={{ maxWidth: "800px" }}>
+            <h3 style={{ marginTop: 0 }}>{editCouponId ? "Cập nhật mã giảm giá" : "Thêm mã giảm giá mới"}</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+              <div className="field">
+                <label>Mã (Code)</label>
+                <input value={cCode} onChange={e => setCCode(e.target.value.toUpperCase())} required placeholder="VD: TET2026" />
+              </div>
+              <div className="field">
+                <label>Giảm giá (%)</label>
+                <input type="number" min="1" max="100" value={cDiscount} onChange={e => setCDiscount(e.target.value)} required />
+              </div>
+              <div className="field" style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <input type="checkbox" id="couponActive" checked={cActive} onChange={e => setCActive(e.target.checked)} style={{ width: "auto" }} />
+                <label htmlFor="couponActive" style={{ margin: 0 }}>Kích hoạt</label>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "1rem", margin: "1.5rem 0 0.5rem" }}>
+              <div className="muted" style={{ fontSize: "0.85rem" }}>* Ở phiên bản này, mã giảm giá sẽ được nhận không có giới hạn lượt sử dụng hoặc đơn mua tối thiểu.</div>
+            </div>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button className="btn btn-primary">{editCouponId ? "Cập nhật" : "Thêm mới"}</button>
+              {editCouponId && <button type="button" className="btn btn-ghost" onClick={() => {
+                setEditCouponId(null); setCCode(""); setCDiscount(""); setCActive(true);
+              }}>Hủy</button>}
+            </div>
+          </form>
+
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <table className="data-table" style={{ margin: 0 }}>
+              <thead>
+                <tr>
+                  <th style={{ paddingLeft: "1.5rem" }}>Mã Code</th>
+                  <th>Sale (%)</th>
+                  <th>Đã dùng</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coupons.map(c => (
+                  <tr key={c.id}>
+                    <td style={{ paddingLeft: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>{c.code}</td>
+                    <td style={{ fontWeight: 700 }}>{c.discountPercent}%</td>
+                    <td>{c.usedCount} lượt</td>
+                    <td>
+                      <span style={{ 
+                        padding: "4px 8px", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 700,
+                        background: c.active ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+                        color: c.active ? "#22c55e" : "#ef4444"
+                      }}>
+                        {c.active ? "Hoạt động" : "Tạm ngưng"}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button className="btn btn-ghost" onClick={() => startEditCoupon(c)}>Sửa</button>
+                        <button className="btn btn-danger" onClick={() => deleteCoupon(c.id)}>Xóa</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {coupons.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: "center", padding: "2rem" }} className="muted">
+                      Chưa có mã giảm giá nào
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
