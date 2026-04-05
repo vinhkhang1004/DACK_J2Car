@@ -1,6 +1,8 @@
 package com.example.J2AutoParts.entity;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -58,4 +60,10 @@ public class User {
 			inverseJoinColumns = @JoinColumn(name = "role_id"))
 	@Builder.Default
 	private Set<Role> roles = new HashSet<>();
+
+	@jakarta.persistence.ElementCollection(fetch = FetchType.EAGER)
+	@jakarta.persistence.CollectionTable(name = "user_addresses", joinColumns = @JoinColumn(name = "user_id"))
+	@Column(name = "address_text", length = 500)
+	@Builder.Default
+	private List<String> savedAddresses = new ArrayList<>();
 }

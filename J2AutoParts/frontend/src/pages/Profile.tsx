@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { api, type Order, type Product } from "../api";
 import { useCart } from "../CartContext";
+import MapSelector from "../components/MapSelector";
 
 type Tab = "profile" | "orders" | "wishlist";
 
@@ -43,6 +44,9 @@ export default function Profile() {
   const [fullName, setFullName] = useState(user?.fullName || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [address, setAddress] = useState(user?.address || "");
+  const [savedAddresses, setSavedAddresses] = useState<string[]>(user?.savedAddresses || []);
+  const [showMap, setShowMap] = useState(false);
+  
   const [msg, setMsg] = useState<string | null>(location.state?.msg || null);
   const [err, setErr] = useState<string | null>(null);
   
@@ -61,7 +65,7 @@ export default function Profile() {
     e.preventDefault();
     setMsg(null); setErr(null);
     try {
-      await api.put("/auth/profile", { fullName, phone, address });
+      await api.put("/auth/profile", { fullName, phone, address, savedAddresses });
       await refreshProfile();
       setMsg("Cập nhật thông tin thành công");
     } catch (ex: any) {
@@ -144,9 +148,25 @@ export default function Profile() {
             </div>
             <div className="field">
               <label>Địa chỉ mặc định</label>
-              <textarea value={address} onChange={e => setAddress(e.target.value)} rows={3} placeholder="Số nhà, tên đường, phường/xã..." />
+              <textarea value={address} onChange={e => setAddress(e.target.value)} rows={2} placeholder="Số nhà, tên đường, phường/xã..." />
             </div>
-            <button className="btn btn-primary" style={{ width: "100%", marginTop: "1rem" }}>Lưu thay đổi</button>
+            
+            <div className="field" style={{ marginTop: "1rem" }}>
+              <label>Danh sách địa chỉ để giao hàng</label>
+              {savedAddresses.map((addr, idx) => (
+                <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem", padding: "0.75rem", background: "rgba(255,255,255,0.05)", borderRadius: "6px" }}>
+                  <span style={{ fontSize: "0.9rem" }}>{addr}</span>
+                  <button type="button" className="btn btn-ghost" style={{ color: "#ef4444", padding: "0.25rem 0.5rem" }} onClick={() => setSavedAddresses(savedAddresses.filter((_, i) => i !== idx))}>Xóa</button>
+                </div>
+              ))}
+              <div style={{ marginTop: "1rem" }}>
+                <button type="button" className="btn btn-ghost" style={{ border: "1px dashed var(--border)", width: "100%", padding: "0.75rem", color: "var(--accent)" }} onClick={() => setShowMap(true)}>
+                  + Thêm địa chỉ mới từ bản đồ
+                </button>
+              </div>
+            </div>
+
+            <button className="btn btn-primary" style={{ width: "100%", marginTop: "2rem" }}>Lưu thay đổi</button>
           </form>
         )}
 
@@ -259,6 +279,18 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      {showMap && (
+        <MapSelector 
+          onClose={() => setShowMap(false)} 
+          onLocationSelected={(addr) => {
+            if (!savedAddresses.includes(addr)) {
+               setSavedAddresses([...savedAddresses, addr]);
+            }
+            setShowMap(false);
+          }} 
+        />
+      )}
     </div>
   );
 }
