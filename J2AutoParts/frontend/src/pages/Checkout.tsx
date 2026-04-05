@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../CartContext";
 import { useAuth } from "../AuthContext";
 import { api, type OrderRequest, type Coupon } from "../api";
+import MapSelector from "../components/MapSelector";
 
 export default function Checkout() {
   const { user } = useAuth();
@@ -12,6 +13,7 @@ export default function Checkout() {
   const [phone, setPhone] = useState(user?.phone || "");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
   
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -72,13 +74,36 @@ export default function Checkout() {
             {err && <div className="error-banner" style={{ marginBottom: "2rem" }}>{err}</div>}
 
             <div className="field">
-              <label>Địa chỉ nhận hàng (Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố)</label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "0.5rem" }}>
+                <label style={{ margin: 0 }}>Địa chỉ nhận hàng</label>
+                <button type="button" className="btn btn-ghost" style={{ padding: "0.25rem 0.5rem", fontSize: "0.85rem", color: "var(--accent)" }} onClick={() => setShowMap(true)}>
+                  <span style={{ marginRight: "0.25rem" }}>📍</span> Chọn trên bản đồ
+                </button>
+              </div>
+
+              {user?.savedAddresses && user.savedAddresses.length > 0 && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <select 
+                    style={{ width: "100%", padding: "0.75rem", background: "var(--bg-lighter)", color: "white", border: "1px solid var(--border)", borderRadius: "6px" }}
+                    onChange={(e) => {
+                      if (e.target.value) setAddress(e.target.value);
+                    }}
+                    value={user.savedAddresses.includes(address) ? address : ""}
+                  >
+                    <option value="" disabled>-- Chọn địa chỉ đã lưu --</option>
+                    {user.savedAddresses.map((addr, idx) => (
+                      <option key={idx} value={addr}>{addr}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <textarea 
                 value={address} 
                 onChange={e => setAddress(e.target.value)} 
                 required 
                 rows={3}
-                placeholder="VD: 123 Đường ABC, Quận 1, TP. HCM"
+                placeholder="Nhập địa chỉ nhận hàng (Ví dụ: 123 Đường ABC...)"
               />
             </div>
 
@@ -217,6 +242,16 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+      
+      {showMap && (
+        <MapSelector 
+          onClose={() => setShowMap(false)} 
+          onLocationSelected={(addr) => {
+            setAddress(addr);
+            setShowMap(false);
+          }} 
+        />
+      )}
     </div>
   );
 }

@@ -55,6 +55,7 @@ export type User = {
   phone: string | null;
   address: string | null;
   roles: string[];
+  savedAddresses: string[];
 };
 
 export type UserProfile = {
@@ -64,6 +65,7 @@ export type UserProfile = {
   phone: string | null;
   address: string | null;
   roles: string[];
+  savedAddresses: string[];
 };
 
 export type Category = {
