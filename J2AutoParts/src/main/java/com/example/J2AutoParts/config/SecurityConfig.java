@@ -58,6 +58,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PATCH, "/api/products/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.GET, "/api/coupons/validate").permitAll()
+						.requestMatchers("/api/coupons/**").hasRole("ADMIN")
 						.anyRequest().authenticated())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();

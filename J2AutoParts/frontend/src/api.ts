@@ -90,10 +90,33 @@ export type Product = {
   additionalImageUrls: string[];
 };
 
-export type OrderRequest = {
+export interface OrderRequest {
   shippingAddress: string;
   phone: string;
-  items: { productId: number; quantity: number }[];
+  couponCode?: string;
+  items: {
+    productId: number;
+    quantity: number;
+  }[];
+}
+
+export interface Coupon {
+  id: number;
+  code: string;
+  discountPercent: number;
+  expirationDate: string | null;
+  active: boolean;
+  usageLimit: number | null;
+  usedCount: number;
+  createdAt: string;
+}
+
+export interface CouponRequestPayload {
+  code: string;
+  discountPercent: number;
+  expirationDate: string | null;
+  active: boolean;
+  usageLimit: number | null;
 };
 
 export type CartItem = {

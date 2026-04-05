@@ -54,6 +54,12 @@ public class Order {
 	@Column(nullable = false, length = 500)
 	private String shippingAddress;
 
+	@Column(length = 50)
+	private String couponCode;
+
+	@Column(precision = 14, scale = 2)
+	private BigDecimal discountAmount;
+
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private List<OrderItem> items = new ArrayList<>();

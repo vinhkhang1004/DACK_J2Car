@@ -26,6 +26,7 @@ public class OrderService {
 
 	private final OrderRepository orderRepository;
 	private final ProductRepository productRepository;
+	private final CouponService couponService;
 
 	@Transactional(readOnly = true)
 	public List<OrderResponse> getOrders(User user) {
@@ -82,6 +83,22 @@ public class OrderService {
 					.build();
 			order.getItems().add(item);
 		}
+
+		BigDecimal subTotal = total;
+		BigDecimal discountAmount = BigDecimal.ZERO;
+		
+		if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+			com.example.J2AutoParts.dto.CouponDto couponDto = couponService.validateCoupon(request.getCouponCode());
+			
+			discountAmount = subTotal.multiply(BigDecimal.valueOf(couponDto.getDiscountPercent())).divide(BigDecimal.valueOf(100));
+			total = subTotal.subtract(discountAmount);
+			
+			order.setCouponCode(couponDto.getCode());
+			order.setDiscountAmount(discountAmount);
+			
+			couponService.incrementUsage(couponDto.getCode());
+		}
+
 		order.setTotalAmount(total);
 
 		return toResponse(orderRepository.save(order));
