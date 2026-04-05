@@ -145,3 +145,20 @@ export type DashboardStats = {
 };
 
 export type ApiError = { message: string; fieldErrors?: Record<string, string> };
+
+export type Review = {
+  id: number;
+  productId: number;
+  userId: number;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string | null;
+};
+
+export type ReviewRequestPayload = {
+  productId: number;
+  rating: number;
+  comment: string;
+};
