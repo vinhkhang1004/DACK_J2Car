@@ -18,7 +18,10 @@ import com.example.J2AutoParts.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import lombok.RequiredArgsConstructor;
+import com.example.J2AutoParts.dto.NotificationDto;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class OrderService {
 	private final OrderRepository orderRepository;
 	private final ProductRepository productRepository;
 	private final CouponService couponService;
+	private final SimpMessagingTemplate messagingTemplate;
 
 	@Transactional(readOnly = true)
 	public List<OrderResponse> getOrders(User user) {
@@ -101,7 +105,18 @@ public class OrderService {
 
 		order.setTotalAmount(total);
 
-		return toResponse(orderRepository.save(order));
+		Order savedOrder = orderRepository.save(order);
+		
+		// Gửi thông báo realtime cho admin
+		NotificationDto notification = NotificationDto.builder()
+				.type("NEW_ORDER")
+				.message("Bạn vừa nhận được một đơn đặt hàng mới: #ORD-" + savedOrder.getId())
+				.orderId(savedOrder.getId())
+				.timestamp(java.time.LocalDateTime.now())
+				.build();
+		messagingTemplate.convertAndSend("/topic/admin/notifications", notification);
+
+		return toResponse(savedOrder);
 	}
 
 	@Transactional
