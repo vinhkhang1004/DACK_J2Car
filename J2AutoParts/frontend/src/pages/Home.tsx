@@ -17,9 +17,6 @@ export default function Home() {
             <Link to="/san-pham" className="btn btn-primary" style={{ padding: "0.8rem 2rem" }}>
               Xem sản phẩm
             </Link>
-            <Link to="/dang-ky" className="btn btn-ghost" style={{ padding: "0.8rem 2rem", background: "rgba(255,255,255,0.05)" }}>
-              Tạo tài khoản khách hàng
-            </Link>
           </div>
 
           <div className="hero-search-bar" style={{ marginTop: "4rem" }}>
