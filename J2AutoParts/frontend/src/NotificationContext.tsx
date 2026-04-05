@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Client } from '@stomp/stompjs';
+// @ts-ignore
 import SockJS from 'sockjs-client/dist/sockjs';
 import { useAuth } from './AuthContext';
 

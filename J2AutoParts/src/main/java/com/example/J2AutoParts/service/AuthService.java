@@ -70,6 +70,7 @@ public class AuthService {
 				.fullName(user.getFullName())
 				.phone(user.getPhone())
 				.address(user.getAddress())
+				.savedAddresses(user.getSavedAddresses())
 				.roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
 				.build();
 	}
@@ -81,6 +82,12 @@ public class AuthService {
 		user.setFullName(request.getFullName().trim());
 		user.setPhone(request.getPhone());
 		user.setAddress(request.getAddress());
+		
+		if (request.getSavedAddresses() != null) {
+			user.getSavedAddresses().clear();
+			user.getSavedAddresses().addAll(request.getSavedAddresses());
+		}
+		
 		userRepository.save(user);
 		return currentProfile(principal);
 	}

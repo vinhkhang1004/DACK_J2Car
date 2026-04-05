@@ -12,4 +12,6 @@ public class ProfileRequest {
 	private String phone;
 
 	private String address;
+	
+	private java.util.List<String> savedAddresses;
 }

@@ -19,4 +19,5 @@ public class UserProfileResponse {
 	private String phone;
 	private String address;
 	private Set<String> roles;
+	private java.util.List<String> savedAddresses;
 }
