@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { api, type Category, type Product, type User, type Order, type DashboardStats } from "../api";
 
-type Tab = "products" | "users" | "orders" | "stats";
+type Tab = "products" | "categories" | "users" | "orders" | "stats";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
@@ -170,6 +170,7 @@ export default function Admin() {
       <div style={{ display: "flex", gap: "0.75rem", marginBottom: "3rem", borderBottom: "1px solid var(--border)", paddingBottom: "1px", flexWrap: "wrap" }}>
         {[
           { id: "products", label: "Quản lý sản phẩm" },
+          { id: "categories", label: "Quản lý danh mục" },
           { id: "users", label: "Quản lý User" },
           { id: "orders", label: "Quản lý đơn hàng" },
           { id: "stats", label: "Thống kê" }
@@ -195,7 +196,7 @@ export default function Admin() {
 
       {tab === "products" && (
         <div style={{ display: "grid", gap: "3rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "2rem", alignItems: "start" }}>
+          <div style={{ display: "grid", gap: "2rem", alignItems: "start" }}>
             <form className="card" onSubmit={onSaveProduct}>
               <h3 style={{ marginTop: 0 }}>{editProductId ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
@@ -256,40 +257,7 @@ export default function Admin() {
               </div>
             </form>
 
-            <div style={{ display: "grid", gap: "2rem" }}>
-              <form className="card" onSubmit={onSaveCategory}>
-                <h3 style={{ marginTop: 0 }}>{editCatId ? "Sửa danh mục" : "Thêm danh mục"}</h3>
-                <div className="field">
-                  <label>Tên danh mục</label>
-                  <input value={catName} onChange={e => setCatName(e.target.value)} required />
-                </div>
-                <div className="field">
-                  <label>Mô tả</label>
-                  <textarea value={catDesc} onChange={e => setCatDesc(e.target.value)} rows={2} />
-                </div>
-                <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-                  <button className="btn btn-ghost" style={{ width: "100%" }}>{editCatId ? "Cập nhật" : "Thêm mới"}</button>
-                  {editCatId && <button type="button" className="btn btn-ghost" onClick={() => {
-                    setEditCatId(null); setCatName(""); setCatDesc("");
-                  }}>Hủy</button>}
-                </div>
-              </form>
 
-              <div className="card" style={{ padding: "1.5rem" }}>
-                <h4 style={{ marginTop: 0, marginBottom: "1rem" }}>Danh mục hiện có</h4>
-                <div style={{ display: "grid", gap: "0.75rem" }}>
-                  {categories.map(c => (
-                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "0.5rem", borderBottom: "1px solid var(--border)" }}>
-                      <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{c.name}</span>
-                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                        <button className="btn btn-ghost" style={{ padding: "2px 8px", fontSize: "0.7rem" }} onClick={() => startEditCategory(c)}>Sửa</button>
-                        <button className="btn btn-danger" style={{ padding: "2px 8px", fontSize: "0.7rem" }} onClick={() => deleteCategory(c.id)}>Xóa</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
@@ -322,6 +290,58 @@ export default function Admin() {
                       <div style={{ display: "flex", gap: "0.5rem" }}>
                         <button className="btn btn-ghost" onClick={() => startEditProduct(p)}>Sửa</button>
                         <button className="btn btn-danger" onClick={() => deleteProduct(p.id)}>Xóa</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === "categories" && (
+        <div style={{ display: "grid", gap: "3rem" }}>
+          <form className="card" onSubmit={onSaveCategory} style={{ maxWidth: "800px" }}>
+            <h3 style={{ marginTop: 0 }}>{editCatId ? "Cập nhật danh mục" : "Thêm danh mục mới"}</h3>
+            <div style={{ display: "grid", gap: "1.5rem" }}>
+              <div className="field">
+                <label>Tên danh mục</label>
+                <input value={catName} onChange={e => setCatName(e.target.value)} required />
+              </div>
+              <div className="field">
+                <label>Mô tả</label>
+                <textarea value={catDesc} onChange={e => setCatDesc(e.target.value)} rows={3} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
+              <button className="btn btn-primary">{editCatId ? "Cập nhật" : "Thêm mới"}</button>
+              {editCatId && <button type="button" className="btn btn-ghost" onClick={() => {
+                setEditCatId(null); setCatName(""); setCatDesc("");
+              }}>Hủy</button>}
+            </div>
+          </form>
+
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <table className="data-table" style={{ margin: 0 }}>
+              <thead>
+                <tr>
+                  <th style={{ paddingLeft: "1.5rem" }}>ID</th>
+                  <th>Tên danh mục</th>
+                  <th>Mô tả</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map(c => (
+                  <tr key={c.id}>
+                    <td style={{ paddingLeft: "1.5rem" }}>{c.id}</td>
+                    <td style={{ fontWeight: 700 }}>{c.name}</td>
+                    <td style={{ fontSize: "0.85rem", maxWidth: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.description || "-"}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button className="btn btn-ghost" onClick={() => startEditCategory(c)}>Sửa</button>
+                        <button className="btn btn-danger" onClick={() => deleteCategory(c.id)}>Xóa</button>
                       </div>
                     </td>
                   </tr>
