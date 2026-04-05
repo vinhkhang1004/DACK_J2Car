@@ -22,6 +22,8 @@ export default function ProductDetail() {
   const [reviewInput, setReviewInput] = useState("");
   const [ratingInput, setRatingInput] = useState(5);
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
+  
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -40,7 +42,14 @@ export default function ProductDetail() {
       .get<Review[]>(`/reviews/product/${id}`)
       .then((r) => setReviews(r.data))
       .catch(console.error);
-  }, [id]);
+      
+    if (user && id) {
+      void api
+        .get<boolean>(`/wishlists/check/${id}`)
+        .then((r) => setIsWishlisted(r.data))
+        .catch(console.error);
+    }
+  }, [id, user]);
 
   const fetchReviews = async () => {
     if (!id) return;
@@ -91,6 +100,21 @@ export default function ProductDetail() {
     setEditingReviewId(r.id);
     setRatingInput(r.rating);
     setReviewInput(r.comment);
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập để sử dụng tính năng này!");
+      return;
+    }
+    if (!p) return;
+    try {
+      await api.post(`/wishlists/${p.id}`);
+      setIsWishlisted(!isWishlisted);
+    } catch (e) {
+      console.error(e);
+      alert("Đã có lỗi xảy ra");
+    }
   };
 
   if (err) {
@@ -239,8 +263,25 @@ export default function ProductDetail() {
               Thêm vào giỏ hàng
             </button>
           </div>
-          <button className="btn btn-ghost" style={{ height: "56px", width: "100%", background: "rgba(255,255,255,0.03)", marginBottom: "2rem" }}>
-            Thêm vào danh sách ước
+          <button 
+            className="btn btn-ghost" 
+            style={{ 
+              height: "56px", 
+              width: "100%", 
+              background: isWishlisted ? "rgba(239, 68, 68, 0.1)" : "rgba(255,255,255,0.03)", 
+              color: isWishlisted ? "#ef4444" : "var(--text)",
+              marginBottom: "2rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem"
+            }}
+            onClick={handleToggleWishlist}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            {isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách ước"}
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.85rem", color: "#00deff", fontWeight: 600 }}>
