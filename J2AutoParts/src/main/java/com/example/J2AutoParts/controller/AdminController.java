@@ -25,6 +25,8 @@ import com.example.J2AutoParts.repository.RoleRepository;
 import com.example.J2AutoParts.repository.UserRepository;
 import com.example.J2AutoParts.entity.Role;
 import com.example.J2AutoParts.entity.RoleName;
+import com.example.J2AutoParts.dto.NotificationDto;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,6 +41,7 @@ public class AdminController {
 	private final ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
 	private final RoleRepository roleRepository;
+	private final SimpMessagingTemplate messagingTemplate;
 
 	@GetMapping("/users")
 	@org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -87,6 +90,15 @@ public class AdminController {
 		String statusStr = body.get("status");
 		order.setStatus(OrderStatus.valueOf(statusStr));
 		orderRepository.save(order);
+		
+		NotificationDto notification = NotificationDto.builder()
+				.type("STATUS_UPDATE")
+				.message("Đơn hàng #ORD-" + order.getId() + " của bạn đã cập nhật trạng thái thành: " + statusStr)
+				.orderId(order.getId())
+				.timestamp(java.time.LocalDateTime.now())
+				.build();
+		messagingTemplate.convertAndSend("/topic/user/notifications/" + order.getUser().getId(), notification);
+		
 		return ResponseEntity.ok(toOrderResponse(order));
 	}
 
